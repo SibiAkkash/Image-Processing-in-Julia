@@ -16,7 +16,7 @@ end
 # ╔═╡ 51d657ba-3305-4fa6-93d0-fe75252621b8
 begin
 	import Pkg
-	# Pkg.activate(mktempdir())
+	Pkg.activate(mktempdir())
 	Pkg.add([
 		"Images",
 		"ImageShow",
@@ -26,9 +26,11 @@ begin
 		"PlutoUI", 
 		"ColorVectorSpace",
 		"PNGFiles",
-		"HypertextLiteral"
+		"HypertextLiteral",
+		"TestImages",
+		"Statistics"
 	])
-	using Colors, ColorVectorSpace, ImageShow, FileIO
+	using Colors, ColorVectorSpace, Images, ImageShow, FileIO
 	using PlutoUI
 	using HypertextLiteral
 end
@@ -39,9 +41,6 @@ Pkg.add("PaddedViews")
 # ╔═╡ 88ff5b19-9caa-44ff-9b4b-ba91d0fa6da4
 Pkg.add("ImageFiltering")
 
-# ╔═╡ af0754f0-14a7-11ec-33ed-5b1694bf67fb
-using Images;
-
 # ╔═╡ 9bc56bb7-195d-494c-8693-dd384eec96ba
 using TestImages;
 
@@ -50,9 +49,6 @@ using PaddedViews;
 
 # ╔═╡ 2e266068-2735-4c2c-8084-5f3502d01ef0
 using ImageFiltering;
-
-# ╔═╡ e045ba79-53bc-4c30-a19f-a161072083b9
-using Statistics;
 
 # ╔═╡ ec05e818-a041-40ae-b6f2-076c40d97210
 url = "https://picsum.photos/200/300"
@@ -66,31 +62,16 @@ img = load("random_img.jpg")
 # ╔═╡ 9174cb97-9a85-4d60-af92-d96fa988dcec
 typeof(img)
 
-# ╔═╡ 48d59401-773d-4c0f-a720-a4c76f839795
-size(img)
-
-# ╔═╡ e971039e-6084-4ab6-9628-052df2f9bee4
-img[100, 200]
-
 # ╔═╡ e07bfff3-ec95-4d9f-9abf-510917058e53
 img[100:200, 50:100]
 
 # ╔═╡ 03daf2e9-a9d4-49f4-9969-1944d8bf5ffb
 md"Concatenate arrays"
 
-# ╔═╡ c91402c2-28ca-4930-a780-429551b52cf7
-[img img]
-
 # ╔═╡ f8af5b5b-d9ea-4b52-ad6f-395afc1c9665
 [img reverse(img, dims=2)]
 
-# ╔═╡ b0fac96c-68ab-410a-9081-4b5ab4b7b707
-
-
-# ╔═╡ 5ccb7eed-9239-45b8-a208-f271554a66e7
-
-
-# ╔═╡ 8cca1b96-5fb7-41af-8b3a-bfb832a173db
+# ╔═╡ c865792d-4e86-4928-97f8-bd83413f51c5
 new_img = copy(img)
 
 # ╔═╡ e36ba824-f849-4337-b55c-79897e23845c
@@ -121,13 +102,6 @@ end
 # ╔═╡ ad408af2-a0a9-49fb-ac2d-b8ddd3af1faf
 redify.(img)
 
-# ╔═╡ c7227cab-40f4-4db0-998e-31b297470767
-img[200:300, :]
-
-# ╔═╡ 7f03da08-3540-40ce-9323-cd8f14c25142
-# img[200, :]
-typeof(img[200, 1])
-
 # ╔═╡ 5c75b3ce-8d3c-42d4-bc3c-26d4c7fd037a
 function invert_pixel(color)
 	inverted = RGB(abs(1 - color.r), abs(1 - color.g), abs(1 - color.b))
@@ -141,7 +115,6 @@ begin
 end
 
 # ╔═╡ 2406d587-29b3-45b3-bf85-6f0a1a685295
-# write an inline function to invert a pixel
 begin
 	invert_inline(c) = RGB(abs(1-c.r), abs(1-c.g), abs(1-c.b))
 	[p invert_inline(p)]
@@ -161,23 +134,6 @@ let
 	temp = copy(img)
 	temp = RGB(1, 1, 1) .- temp
 end
-
-# ╔═╡ a4cae521-769e-4893-8ff5-0fc70ead2503
-let
-	temp = copy(img)
-	temp[100:120, 50:100] .= RGB(1, 1, 1)
-	temp
-end
-
-# ╔═╡ f32b3a2b-8b7c-4bf2-b059-c9e0ea2fcda6
-function create_bar()
-	temp = zeros(100)
-	temp[40:60] .= 1
-	return temp
-end
-
-# ╔═╡ 87046e36-25cb-4846-80cd-ff713b3639e4
-create_bar()[30:70]
 
 # ╔═╡ b0491200-33ec-40e8-9aeb-ee0024108040
 [RGB(i, j, 0) for i in 0:0.9:1, j in 0:0.9:1]
@@ -199,7 +155,7 @@ md"
 # ╔═╡ be5aeaca-2e9b-4d6d-a863-894ed1961a8b
 function log_transform(c)
 	return RGB(2log(1+c.r), 2log(1+c.g), 2log(1+c.b))
-end;
+end
 
 # ╔═╡ 46a25a81-f6ab-4772-97dc-e614bfb5b5af
 [img log_transform.(img)]
@@ -395,63 +351,52 @@ function correlate(img, kernel)
 end
 
 # ╔═╡ fed19b2b-3cd6-4510-a47a-c48adcb5434a
-correlate(cameraman, kernel)
+# correlate(cameraman, kernel)
 
 # ╔═╡ 8f2f56f3-6764-4274-817e-41a013b860bb
-begin
-	a = [x for x in 1:5]
-	b = [y for y in 10:10:50]
-	ele_mul = a .* b
-	total = sum(ele_mul)
-end
+# begin
+# 	a = [x for x in 1:5]
+# 	b = [y for y in 10:10:50]
+# 	ele_mul = a .* b
+# 	total = sum(ele_mul)
+# end
 
-# ╔═╡ c8198201-ca17-42f4-aa86-9bbb7b1fbf10
-
+# ╔═╡ e045ba79-53bc-4c30-a19f-a161072083b9
+# using Statistics;
 
 # ╔═╡ ae8d1c5b-5b28-4e94-a619-c759de9e85bd
-begin
-	t1 = zeros(2, 3)
-	t2 = ones(2, 3) / 2
-	t1 + t2
-end
+# begin
+# 	t1 = zeros(2, 3)
+# 	t2 = ones(2, 3) / 2
+# 	t1 + t2
+# end
 
 # ╔═╡ 86471aae-d3e7-4142-b0bb-fe50c0ce6016
 # max_neighborhood(img, i, j) = maxfinite(img[i-1:i+1, j-1:j+1])
 
 # ╔═╡ Cell order:
-# ╠═af0754f0-14a7-11ec-33ed-5b1694bf67fb
+# ╠═51d657ba-3305-4fa6-93d0-fe75252621b8
 # ╠═ec05e818-a041-40ae-b6f2-076c40d97210
 # ╠═98fc490a-bd8b-4911-8651-133f87c41261
 # ╠═bdbab508-3798-48b0-81ec-0dc0b99556a4
 # ╠═9174cb97-9a85-4d60-af92-d96fa988dcec
-# ╠═48d59401-773d-4c0f-a720-a4c76f839795
-# ╠═e971039e-6084-4ab6-9628-052df2f9bee4
 # ╠═e07bfff3-ec95-4d9f-9abf-510917058e53
 # ╟─03daf2e9-a9d4-49f4-9969-1944d8bf5ffb
-# ╠═c91402c2-28ca-4930-a780-429551b52cf7
 # ╠═f8af5b5b-d9ea-4b52-ad6f-395afc1c9665
-# ╠═b0fac96c-68ab-410a-9081-4b5ab4b7b707
-# ╠═5ccb7eed-9239-45b8-a208-f271554a66e7
-# ╠═8cca1b96-5fb7-41af-8b3a-bfb832a173db
+# ╠═c865792d-4e86-4928-97f8-bd83413f51c5
 # ╠═e36ba824-f849-4337-b55c-79897e23845c
 # ╠═8fa0c416-d461-4aaf-9a39-06303508e8f6
 # ╠═69cd8a1f-1124-44d0-ac5b-3feba3ce258b
 # ╠═fca41319-0542-4aab-86e3-5a031ffc9f28
 # ╠═31515abc-1cfd-4656-81e6-ec5f86967cc1
 # ╠═ad408af2-a0a9-49fb-ac2d-b8ddd3af1faf
-# ╠═c7227cab-40f4-4db0-998e-31b297470767
-# ╠═7f03da08-3540-40ce-9323-cd8f14c25142
 # ╠═5c75b3ce-8d3c-42d4-bc3c-26d4c7fd037a
 # ╠═2acb8aff-810b-48e7-8ba7-6cec1687b64d
 # ╠═2406d587-29b3-45b3-bf85-6f0a1a685295
 # ╟─21f43419-9019-41f5-b15a-d51f96716f14
 # ╠═4f36c547-61fc-419e-b621-76683f9c6e76
 # ╠═6ec82a8f-2851-485a-9fbd-d9576e606471
-# ╠═a4cae521-769e-4893-8ff5-0fc70ead2503
-# ╠═f32b3a2b-8b7c-4bf2-b059-c9e0ea2fcda6
-# ╠═87046e36-25cb-4846-80cd-ff713b3639e4
 # ╠═b0491200-33ec-40e8-9aeb-ee0024108040
-# ╠═51d657ba-3305-4fa6-93d0-fe75252621b8
 # ╟─ffa79434-ac83-49e8-abc0-422ff8012449
 # ╠═5ea32d3f-b843-489f-9953-1b9fe0159fd9
 # ╟─6ee6ac94-a589-485c-bdbb-a02f147fec14
@@ -491,6 +436,5 @@ end
 # ╠═fed19b2b-3cd6-4510-a47a-c48adcb5434a
 # ╠═8f2f56f3-6764-4274-817e-41a013b860bb
 # ╠═e045ba79-53bc-4c30-a19f-a161072083b9
-# ╠═c8198201-ca17-42f4-aa86-9bbb7b1fbf10
 # ╠═ae8d1c5b-5b28-4e94-a619-c759de9e85bd
 # ╟─86471aae-d3e7-4142-b0bb-fe50c0ce6016
