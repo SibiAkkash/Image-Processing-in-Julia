@@ -25,27 +25,19 @@ begin
 		"PNGFiles",
 		"HypertextLiteral",
 		"TestImages",
-		"Statistics"
+		"Statistics",
+		"PaddedFiltering"
 	])
 	using Images, FileIO
 	using PlutoUI
 	using HypertextLiteral
 end
 
-# ╔═╡ b9f3f3b4-8cd3-464f-91b4-6b6fd36776d8
-Pkg.add("PaddedViews")
-
-# ╔═╡ 88ff5b19-9caa-44ff-9b4b-ba91d0fa6da4
-Pkg.add("ImageFiltering")
-
 # ╔═╡ 9bc56bb7-195d-494c-8693-dd384eec96ba
 using TestImages;
 
 # ╔═╡ e412e8ee-4b82-4314-b320-d7da34ae1899
 using PaddedViews;
-
-# ╔═╡ 2e266068-2735-4c2c-8084-5f3502d01ef0
-using ImageFiltering;
 
 # ╔═╡ ec05e818-a041-40ae-b6f2-076c40d97210
 url = "https://picsum.photos/200/300"
@@ -313,12 +305,6 @@ begin
 	[cameraman median_filtered]
 end
 
-# ╔═╡ 2e6f08c0-f6d2-4e21-9cd8-02b18ef1bcf2
-kernel = Kernel.gaussian((1, 1))
-
-# ╔═╡ b45751f8-cb2b-4208-b02f-dd159029a1ea
-kernel[-2,0]
-
 # ╔═╡ 877da570-cb9c-4e25-ab57-5fcb93eec202
 function correlate(img, kernel)
 	out = copy(img)
@@ -411,7 +397,6 @@ end
 # ╠═4c885c4f-8f45-40ef-bab6-7e933653440b
 # ╟─0b161b67-68c0-4057-94e8-a3d3cf251149
 # ╟─298c6fd5-730b-4358-9fe8-b9501fd37826
-# ╠═b9f3f3b4-8cd3-464f-91b4-6b6fd36776d8
 # ╠═e412e8ee-4b82-4314-b320-d7da34ae1899
 # ╠═64cd7fec-ea56-47ac-8a39-f860c822b3e3
 # ╠═1f88e842-449f-453b-92bc-c7879e227236
@@ -425,10 +410,6 @@ end
 # ╟─e8a8535e-c0e5-4a90-85f2-0ae05cd32c0f
 # ╟─9ad5dbfb-5230-4d87-ad45-9629c97580a7
 # ╠═67345307-71b1-411c-856c-f5c1cdfe9dd6
-# ╠═88ff5b19-9caa-44ff-9b4b-ba91d0fa6da4
-# ╠═2e266068-2735-4c2c-8084-5f3502d01ef0
-# ╠═2e6f08c0-f6d2-4e21-9cd8-02b18ef1bcf2
-# ╠═b45751f8-cb2b-4208-b02f-dd159029a1ea
 # ╠═877da570-cb9c-4e25-ab57-5fcb93eec202
 # ╠═fed19b2b-3cd6-4510-a47a-c48adcb5434a
 # ╠═8f2f56f3-6764-4274-817e-41a013b860bb
