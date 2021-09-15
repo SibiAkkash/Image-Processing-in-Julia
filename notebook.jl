@@ -19,18 +19,15 @@ begin
 	Pkg.activate(mktempdir())
 	Pkg.add([
 		"Images",
-		"ImageShow",
 		"ImageIO", 
-		"FileIO", 
-		"Colors", 
+		"FileIO",  
 		"PlutoUI", 
-		"ColorVectorSpace",
 		"PNGFiles",
 		"HypertextLiteral",
 		"TestImages",
 		"Statistics"
 	])
-	using Colors, ColorVectorSpace, Images, ImageShow, FileIO
+	using Images, FileIO
 	using PlutoUI
 	using HypertextLiteral
 end
