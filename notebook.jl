@@ -323,6 +323,29 @@ function median_neighbour_filtering(img, window_size)
 	return output
 end
 
+# ╔═╡ ba0b747a-ef09-408d-beb2-2064cee09ae3
+function med_n(img, window_size)
+	h, w = size(img)
+	pad = window_size ÷ 2
+	padded_img = PaddedView(0, img, (h + pad*2, w + pad*2), (pad+1, pad+1))
+	
+	output = zeros(Gray, h, w)
+	
+	for i in 1 + pad : h + pad
+		for j in 1 + pad : w + pad
+			output[i-pad, j-pad] = median(padded_img[i-pad:i+pad, j-pad:+j+pad])
+		end
+	end
+	return output
+end
+
+# ╔═╡ fe88767b-a729-4d45-8a54-69626e7905cc
+begin
+	original_image = load("lenna.jpg")
+	noisy_image = load("lenna-noise.jpg")
+	[noisy_image med_n(noisy_image, 3)]
+end
+
 # ╔═╡ e8a8535e-c0e5-4a90-85f2-0ae05cd32c0f
 md"""
 Control window size
@@ -362,6 +385,7 @@ function correlate(img, kernel)
 					temp_sum += kernel[i,j] * padded_img[x+i, y+j]
 				end
 			end
+		
 			out[x-limit][y-limit] = temp_sum
 				
 		end
@@ -454,9 +478,11 @@ end
 # ╟─e3fe9f4c-b29f-4c31-aa09-af86a334a5f9
 # ╟─effba953-4734-4bd8-bcfa-e3f3f55d908b
 # ╠═f441f57d-b2d7-462b-a604-a6cd6450e6c9
+# ╠═ba0b747a-ef09-408d-beb2-2064cee09ae3
+# ╠═fe88767b-a729-4d45-8a54-69626e7905cc
 # ╟─e8a8535e-c0e5-4a90-85f2-0ae05cd32c0f
 # ╟─9ad5dbfb-5230-4d87-ad45-9629c97580a7
-# ╟─67345307-71b1-411c-856c-f5c1cdfe9dd6
+# ╠═67345307-71b1-411c-856c-f5c1cdfe9dd6
 # ╠═88ff5b19-9caa-44ff-9b4b-ba91d0fa6da4
 # ╠═2e266068-2735-4c2c-8084-5f3502d01ef0
 # ╠═2e6f08c0-f6d2-4e21-9cd8-02b18ef1bcf2
