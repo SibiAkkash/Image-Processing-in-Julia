@@ -297,8 +297,8 @@ end
 
 # ╔═╡ fe88767b-a729-4d45-8a54-69626e7905cc
 begin
-	original_image = load("lenna.jpg")
-	noisy_image = load("lenna-noise.jpg")
+	original_image = load("images/lenna.jpg")
+	noisy_image = load("images/lenna-noise.jpg")
 	[noisy_image med_n(noisy_image, 3)]
 end
 
