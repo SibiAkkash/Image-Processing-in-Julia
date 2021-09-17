@@ -38,7 +38,7 @@ md"""
 Julia is a flexible dynamic language, appropriate for scientific and numerical computing, with **performance comparable to traditional statically-typed languages**.
 
 
-JuliaImages hosts the major Julia packages for image processing. Julia is well-suited to image processing because it is a modern and elegant high-level language that is a pleasure to use, while also allowing you to write "inner loops" that compile to efficient machine code (i.e., it is as fast as C). Julia supports multithreading and, through add-on packages, GPU processing.
+JuliaImages hosts the major Julia packages for image processing. Julia is well-suited to image processing because it is a modern and elegant high-level language that is a pleasure to use, while also **allowing you to write "inner loops" that compile to efficient machine code (i.e., it is as fast as C)**. Julia supports multithreading and, through add-on packages, GPU processing.
 
 """
 
@@ -49,6 +49,110 @@ imresize(load("images/julia.png"), ratio=0.1)
 md"""
 ---
 ##### Loading necessary packages
+"""
+
+# ╔═╡ 817fc381-dbdd-42aa-be15-2c3743ebf89c
+md"""
+### Morphological operations
+##### m-adjacency
+"""
+
+# ╔═╡ f7f1a2e8-afd1-49e1-a2b0-5623cd98c0fc
+md"""
+2 pixels $P$, $Q$ $\in$ $V$ are m-adjacent if
+
+$1)\hspace{0.5cm} Q \in N_{4}(P)$
+$(or)$
+$2)\hspace{0.5cm} Q \in N_{8}(P) \hspace{0.5cm} \& \hspace{0.5cm} N_{4}(P) \cap N_{4}(Q) = \emptyset$
+
+This means, if Q is 4-connected to P, they are m-adjacent. Else if Q is 8-connected to P, and, P, Q has no common 4-connected neighbors, they are m-adjacent.
+
+$\hspace{0.5cm} V = (0)$
+
+"""
+
+# ╔═╡ 0fb3abd3-dd3f-4052-8480-2240030dc00a
+image = [
+			0 1 0 0 0 1 0; 
+			1 0 1 0 1 0 1; 
+			0 1 0 0 0 1 0; 
+			1 0 0 0 1 0 1; 
+			0 0 0 1 0 0 0;
+			1 0 1 0 1 0 0;
+			0 1 0 0 0 1 0
+		]
+
+# ╔═╡ 6426a726-5dff-4201-8b90-7cf39f45b218
+function n8(img, (i, j))
+	out = []
+	h, w = size(img)
+	steps = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, 1), (-1, 1), (1, -1)]
+	for p in 1:8
+		x, y = steps[p]
+		if 1 <= i + x <= w && 1 <= j + y <= h && img[i+x, j+y] == 0
+			push!(out, (i+x, j+y))
+		end
+	end
+	return out
+end
+
+# ╔═╡ 204c6986-8c2f-42ef-ac4d-effdcd261542
+function n4(img, (i, j))
+	out = []
+	h, w = size(img)
+	steps = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+	for p in 1:4
+		x, y = steps[p]
+		if 1 <= i + x <= w && 1 <= j + y <= h && img[i+x, j+y] == 0
+			push!(out, (i+x, j+y))
+		end
+	end
+	return out
+end
+
+# ╔═╡ fb706db8-bcc1-4676-a9d4-814f448ffa30
+function is_m_adj(img, a, b)
+	is_4_connected = b in n4(image, a)
+	ans = false
+	if is_4_connected
+		ans = true
+	else
+		is_8_connected = b in n8(image, a)
+		common_neighbors = intersect(n4(image, a), n4(image, b))
+		if is_8_connected && size(common_neighbors)[1] == 0
+			ans = true
+		end
+	end
+	return ans
+end
+
+# ╔═╡ 011fa462-d3ce-4f07-95ab-b96f9266ecec
+let
+	a = (3, 3)
+	b = (4, 4) 
+	is_m_adj(image, a, b)
+end
+
+# ╔═╡ 24a542b3-45d8-4dc8-ac99-b9ac075c533c
+md"""
+(3, 3) and (4, 4) are not m-adjacent
+"""
+
+# ╔═╡ ddf3ddab-f590-4059-bd51-79146c1e709b
+let
+	a = (1, 1)
+	b = (2, 2) 
+	is_m_adj(image, a, b)
+end
+
+# ╔═╡ 63ac29f3-fbf4-4459-9c50-32e8d62961a2
+md"""
+(1, 1) and (2, 2) are m-adjacent
+"""
+
+# ╔═╡ d6137613-4fbd-4100-a54f-b1f6411a3b6e
+md"""
+---
 """
 
 # ╔═╡ c4e69a41-35e2-4532-b6a7-0ec268de433e
@@ -112,7 +216,7 @@ md"
 cameraman = testimage("camera")
 
 # ╔═╡ 93fbc6fa-43ca-4de1-9cc7-37cfe1cb455f
-md"Numeric values of each pixel"
+md"**Numeric values of each pixel**"
 
 # ╔═╡ 9e62068a-c14b-47a4-95e2-7b3149a0389a
 channelview(cameraman)
@@ -146,7 +250,7 @@ In Julia, `reinterpret(gray(pixel))` gives us the value of a pixel.
 
 To check if the $n^{th}$ bit of a pixel is set, compute: 
 $pixel$ $\&$ ($1 \ll n$). 
-The mask ($1 \ll n$)  gives us a number with the $n^{th}$ bit set and all other bits $0$ (Left shifting $1$, $n$ times). If the bitwise-and of $1 \ll n$ and $pixel$ is $0$, it means the $n^{th}$ is unset.
+The mask ($1 \ll n$)  gives us a number with the $n^{th}$ bit set and all other bits $0$ (Left shifting $1$, $n$ times). If the bitwise-and of $1 \ll n$ and $pixel$ is $0$, it means the $n^{th}$ pixel is unset.
 
 """
 
@@ -185,7 +289,7 @@ _$6^{th}$ bit-plane, $5^{th}$ bit-plane, $4^{th}$ bit-plane (left to right)._
 
 # ╔═╡ a4468550-d09a-4e02-98eb-25d6a0bfec3f
 md"""
-_$3^{th}$ bit-plane, $2^{th}$ bit-plane, $1^{th}$ bit-plane (left to right)._
+_$3^{rd}$ bit-plane, $2^{nd}$ bit-plane, $1^{st}$ bit-plane (left to right)._
 """
 
 # ╔═╡ 3d14bd45-68cc-4a68-9316-da6479a04ec8
@@ -306,6 +410,7 @@ _Original image(left), reference illumination (centre), uniform illumination (ri
 md"""
 ##### Multiplication
 Each pixel in the output image is the product of the corresponding pixel in the first and second image.
+The output looks like a binocular image of an airplane.
 """
 
 # ╔═╡ 33afa793-3ff9-4964-8dad-55defac879ed
@@ -414,6 +519,7 @@ md"""
 # ╔═╡ 01a993a9-30fc-47ca-a6a1-9499a0fc7205
 md"""
 ##### Zooming
+In zooming, a part of the image is isolated, and interpolated to accomodate the missing pixels.
 """
 
 # ╔═╡ 1078d659-cf33-4609-8e49-cfe40debfd82
@@ -426,6 +532,7 @@ end
 # ╔═╡ ce1d5083-922d-449c-9e60-8262e6b13223
 md"""
 ##### Translation
+A coordinate translation, that pushes each pixel to the right by 50 units, down by 50 units.
 """
 
 # ╔═╡ fb449373-e438-40c5-9ffc-006b8da4a555
@@ -444,6 +551,7 @@ md"""
 md"""
 ### Image interpolation
 ##### Up sampling
+Upsampling is the increasing of the spatial resolution while keeping the 2D representation of an image. It is typically used for zooming in on a small region of an image, and for eliminating the pixelation effect that arises when a low-resolution image is displayed on a relatively large frame.
 """
 
 # ╔═╡ bef4924f-65b9-4bc1-8eff-4c1d19c9946f
@@ -459,6 +567,17 @@ md"""
 # ╟─5e450d7a-9704-4371-831c-83a82a8fc1fb
 # ╟─126ed5e7-d15e-409e-929d-c68a87900be2
 # ╠═51d657ba-3305-4fa6-93d0-fe75252621b8
+# ╟─817fc381-dbdd-42aa-be15-2c3743ebf89c
+# ╟─f7f1a2e8-afd1-49e1-a2b0-5623cd98c0fc
+# ╠═0fb3abd3-dd3f-4052-8480-2240030dc00a
+# ╠═6426a726-5dff-4201-8b90-7cf39f45b218
+# ╠═204c6986-8c2f-42ef-ac4d-effdcd261542
+# ╠═fb706db8-bcc1-4676-a9d4-814f448ffa30
+# ╠═011fa462-d3ce-4f07-95ab-b96f9266ecec
+# ╟─24a542b3-45d8-4dc8-ac99-b9ac075c533c
+# ╠═ddf3ddab-f590-4059-bd51-79146c1e709b
+# ╟─63ac29f3-fbf4-4459-9c50-32e8d62961a2
+# ╟─d6137613-4fbd-4100-a54f-b1f6411a3b6e
 # ╠═c4e69a41-35e2-4532-b6a7-0ec268de433e
 # ╠═9174cb97-9a85-4d60-af92-d96fa988dcec
 # ╟─ffa79434-ac83-49e8-abc0-422ff8012449
@@ -488,7 +607,7 @@ md"""
 # ╟─ac9d1af6-fc97-4a3a-a35f-0741056e35b7
 # ╟─a4468550-d09a-4e02-98eb-25d6a0bfec3f
 # ╟─3d14bd45-68cc-4a68-9316-da6479a04ec8
-# ╠═298c6fd5-730b-4358-9fe8-b9501fd37826
+# ╟─298c6fd5-730b-4358-9fe8-b9501fd37826
 # ╠═1f88e842-449f-453b-92bc-c7879e227236
 # ╠═e3fe9f4c-b29f-4c31-aa09-af86a334a5f9
 # ╟─f001bee6-48b2-4f42-8c91-38de1b1ac09f
