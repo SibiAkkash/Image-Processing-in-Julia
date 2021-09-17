@@ -18,6 +18,7 @@ begin
 	import Pkg
 	Pkg.activate(mktempdir())
 	Pkg.add([
+		"CoordinateTransformations",
 		"Images",
 		"ImageMorphology",
 		"ImageIO", 
@@ -35,6 +36,15 @@ begin
 	using HypertextLiteral
 	using Statistics
 end
+
+# ╔═╡ ce6f6f97-1c33-4426-94bd-e8e55d2a7fbc
+Pkg.add("Interpolations")
+
+# ╔═╡ 9cfac619-cf98-4276-aec8-75d32e6f4f81
+using Interpolations;
+
+# ╔═╡ b5c2d0c2-6001-4e17-9a58-d394cfa25090
+using CoordinateTransformations;
 
 # ╔═╡ b3c895eb-552f-4a2f-a46c-5588ceb36928
 md"""
@@ -429,6 +439,11 @@ md"""
 _Original image(left), Radial gradient (centre), Image product (right)_
 """
 
+# ╔═╡ 925662c4-5ebd-4a26-a8be-9c80dbbfb0b7
+md"""
+---
+"""
+
 # ╔═╡ b2e27047-d19d-47bf-8ebd-6f820b629d71
 md"""
 ##### Logical operations: AND
@@ -436,12 +451,11 @@ md"""
 
 # ╔═╡ 2329ab22-ff21-4dae-9145-aabe0bca97c0
 begin
-	cars = download("$base_path/cars.jpg", "cars.jpg");
-	circle_mask = download("$base_path/circle-mask.jpg", "circle-mask.jpg");
-	cars = load("cars.jpg");
-	circle_mask = load("circle-mask.jpg");
-	[cars circle_mask]
-end
+	cars = download("$base_path/cars.jpg", "cars.jpg")
+	circle_mask = download("$base_path/circle-mask.jpg", "circle-mask.jpg")
+	cars = imresize(load("cars.jpg"), ratio=0.6)
+	circle_mask = imresize(load("circle-mask.jpg"), ratio=0.6)
+end;
 
 # ╔═╡ 1fd2b39e-ed9a-43c0-9793-896b0515545e
 function bitwise_and(a, b)
@@ -449,8 +463,13 @@ function bitwise_and(a, b)
 	return Gray(float(val)/255)
 end;
 
-# ╔═╡ 676dedff-7e5b-47b9-8193-ecb70d8ec42a
-bitwise_and.(cars, circle_mask)
+# ╔═╡ ea7c0ffc-5a9a-4b01-ab55-29710a253d20
+[cars circle_mask bitwise_and.(cars, circle_mask)]
+
+# ╔═╡ f68d4416-40cb-47f5-8fc2-c113f589b67a
+md"""
+_Original image(left), Mask (centre), AND operation output (right)_
+"""
 
 # ╔═╡ 93a381de-6c08-4450-bc54-ffac22d58fc7
 md"""
@@ -464,13 +483,74 @@ function bitwise_or(a, b)
 end;
 
 # ╔═╡ 5ced9bed-d646-4c61-8580-860e2d7e7c56
-bitwise_or.(cars, circle_mask)
+[cars circle_mask bitwise_or.(cars, circle_mask)]
+
+# ╔═╡ c7049d45-4559-484a-95ae-afbddd4df88b
+md"""
+_Original image(left), Mask (centre), OR operation output (right)_
+"""
+
+# ╔═╡ f593417e-7c21-46f0-a61a-c8feed53bacd
+md"""
+---
+"""
+
+# ╔═╡ 9867b901-9520-466a-859c-79f133c97c0d
+md"""
+### Statistical operations
+#### Median
+"""
+
+# ╔═╡ a1b61e01-c17c-4c5c-b93e-8bf1ab2ea8a9
+md"""
+Median intensity level in the image ($0-1$ intensity scale)
+"""
 
 # ╔═╡ 18890635-5b71-44af-9af1-f092c7b21ed3
+[median(channelview(cameraman))]
 
+# ╔═╡ faab4575-9e29-4c66-bc0c-a9b06d76a582
+md"""
+Median value in image as a pixel
+"""
 
-# ╔═╡ 8405a203-9e2f-4544-a96c-7d7e2ad43fc2
-imrotate(cameraman, π/4, axes(cameraman))
+# ╔═╡ 3d5b636a-8b6a-4a20-8541-d1a90a7a867b
+median(cameraman)
+
+# ╔═╡ fa2723ec-924f-452f-805a-f519f1e5ce11
+md"""
+#### Standard deviation
+"""
+
+# ╔═╡ 214853e1-8f70-4716-889f-70f067bd3503
+std(channelview(cameraman))
+
+# ╔═╡ 3ac33561-1487-4d32-aec4-e6152f57e085
+md"""
+---
+"""
+
+# ╔═╡ 1078d659-cf33-4609-8e49-cfe40debfd82
+let
+	part = cameraman[50:300, 100:400]
+	# interpolation after zooming
+	imresize(part, (351, 401), method=BSpline(Linear()))
+end
+
+# ╔═╡ fb449373-e438-40c5-9ffc-006b8da4a555
+let
+	t = Translation(-50, -50)
+	translated = warp(cameraman, t, indices_spatial(cameraman), 0)
+	[cameraman translated]
+end
+
+# ╔═╡ 332901b6-c107-48d0-afd5-a42fd2c384ec
+md"""
+Up sampling
+"""
+
+# ╔═╡ bef4924f-65b9-4bc1-8eff-4c1d19c9946f
+imresize(cameraman, (600, 600), method=BSpline(Linear()))
 
 # ╔═╡ Cell order:
 # ╟─b3c895eb-552f-4a2f-a46c-5588ceb36928
@@ -535,12 +615,29 @@ imrotate(cameraman, π/4, axes(cameraman))
 # ╟─3ec6e5ae-0119-4beb-9681-e19c1e0dc0c9
 # ╠═33afa793-3ff9-4964-8dad-55defac879ed
 # ╟─6a5e4c6f-0c39-460d-8a71-a8a24d5c5e22
+# ╟─925662c4-5ebd-4a26-a8be-9c80dbbfb0b7
 # ╟─b2e27047-d19d-47bf-8ebd-6f820b629d71
 # ╠═2329ab22-ff21-4dae-9145-aabe0bca97c0
 # ╠═1fd2b39e-ed9a-43c0-9793-896b0515545e
-# ╠═676dedff-7e5b-47b9-8193-ecb70d8ec42a
+# ╠═ea7c0ffc-5a9a-4b01-ab55-29710a253d20
+# ╟─f68d4416-40cb-47f5-8fc2-c113f589b67a
 # ╟─93a381de-6c08-4450-bc54-ffac22d58fc7
 # ╠═9ce779dd-b4fc-42b1-b144-e5dd2cd65161
 # ╠═5ced9bed-d646-4c61-8580-860e2d7e7c56
+# ╟─c7049d45-4559-484a-95ae-afbddd4df88b
+# ╟─f593417e-7c21-46f0-a61a-c8feed53bacd
+# ╟─9867b901-9520-466a-859c-79f133c97c0d
+# ╟─a1b61e01-c17c-4c5c-b93e-8bf1ab2ea8a9
 # ╠═18890635-5b71-44af-9af1-f092c7b21ed3
-# ╠═8405a203-9e2f-4544-a96c-7d7e2ad43fc2
+# ╟─faab4575-9e29-4c66-bc0c-a9b06d76a582
+# ╠═3d5b636a-8b6a-4a20-8541-d1a90a7a867b
+# ╟─fa2723ec-924f-452f-805a-f519f1e5ce11
+# ╠═214853e1-8f70-4716-889f-70f067bd3503
+# ╟─3ac33561-1487-4d32-aec4-e6152f57e085
+# ╠═ce6f6f97-1c33-4426-94bd-e8e55d2a7fbc
+# ╠═9cfac619-cf98-4276-aec8-75d32e6f4f81
+# ╠═b5c2d0c2-6001-4e17-9a58-d394cfa25090
+# ╠═1078d659-cf33-4609-8e49-cfe40debfd82
+# ╠═fb449373-e438-40c5-9ffc-006b8da4a555
+# ╟─332901b6-c107-48d0-afd5-a42fd2c384ec
+# ╠═bef4924f-65b9-4bc1-8eff-4c1d19c9946f
