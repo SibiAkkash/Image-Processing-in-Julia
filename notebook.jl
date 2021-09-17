@@ -47,6 +47,9 @@ md"""
 (This might take some time to load)
 """
 
+# ╔═╡ ae17bd41-7958-4c1c-919c-ba63fc8b32a4
+base_path = "https://raw.githubusercontent.com/SibiAkkash/Image-Processing-in-Julia/main/images"
+
 # ╔═╡ ec05e818-a041-40ae-b6f2-076c40d97210
 # let
 # 	url = "https://picsum.photos/200/300"
@@ -95,7 +98,10 @@ md"""
 """
 
 # ╔═╡ 77f0d940-acd1-4a6b-b5cc-9477342ea4ba
-load("images/log_transform.png")
+let
+	log = download("$base_path/log_transform.png", "log_transform.png")
+	log_transform = load("log_transform.png")
+end
 
 # ╔═╡ 29d364af-d96e-450b-97b1-bcc5a312b30b
 md"""
@@ -155,7 +161,10 @@ Each pixel in an image has a bit-depth(the number of bits used to store the inte
 """
 
 # ╔═╡ 585a6a44-ea90-42aa-ad12-bd0857986051
-imresize(load("images/bit-plane-slicing.png"), ratio=0.8)
+begin
+	bp = download("$base_path/bit-plane-slicing.png", "bit-plane-slicing.png")
+	imresize(load("bit-plane-slicing.png"), ratio=0.8)
+end
 
 # ╔═╡ 858a0016-1868-4244-9b39-c9eee8e8528b
 md"""
@@ -188,30 +197,6 @@ let
 	bit_plane = bit_plane_transform.(img, bit_plane_number)
 	[img bit_plane]
 end
-
-# ╔═╡ 9127683a-9ffd-4f98-ac00-b719d858def0
-# function nth_bit_plane(img, bit_plane)
-# 	h, w = size(img)
-# 	out = Matrix{Gray}(undef, h, w)
-	
-# 	for i in 1:h
-# 		for j in 1:w
-# 			value = reinterpret(gray(img[i, j]))
-# 			is_bit_set = value & (1 << (bit_plane - 1))
-# 			factor = is_bit_set == 0 ? 0 : 1
-# 			out[i, j] = Gray(factor)
-# 		end
-# 	end
-	
-# 	return out
-# end
-
-# ╔═╡ 92a533d0-a928-4d45-9fd0-60a748edc05f
-# let
-# 	img = Gray.(testimage("airplane"))
-# 	bit_plane = nth_bit_plane(img, bit_plane_number)
-# 	[img bit_plane]
-# end;
 
 # ╔═╡ 3d14bd45-68cc-4a68-9316-da6479a04ec8
 md"""
@@ -270,10 +255,11 @@ Control window size
 
 # ╔═╡ e3fe9f4c-b29f-4c31-aa09-af86a334a5f9
 let
-	noisy_img = load("images/hip-pepper.jpg")
+	tmp = download("$base_path/hip-pepper.jpg", "hip-pepper.jpg")
+	noisy_img = load("hip-pepper.jpg")
 	denoised = max_neighbour_filtering(noisy_img, max_neighbour_window_size)
-	# [noisy_img denoised]
-	[noisy_img dilate(Gray.(noisy_img))]
+	[noisy_img denoised]
+	# [noisy_img dilate(Gray.(noisy_img))]
 end
 
 # ╔═╡ f001bee6-48b2-4f42-8c91-38de1b1ac09f
@@ -322,7 +308,8 @@ Control window size
 
 # ╔═╡ fe88767b-a729-4d45-8a54-69626e7905cc
 let
-	noisy_img = load("images/Noise_salt_and_pepper.png")
+	tmp = download("$base_path/Noise_salt_and_pepper.png", "Noise_salt_and_pepper.png")
+	noisy_img = load("Noise_salt_and_pepper.png")
 	denoised = median_neighborhood_filtering(noisy_img, 3)
 	[noisy_img denoised]
 end
@@ -404,8 +391,10 @@ This subtraction operation could result in negative values. _In Julia, negative 
 
 # ╔═╡ fd263a3c-4564-4277-b1a7-c513037788d1
 let
-	original = load("images/collenchyma.jpg")
-	reference = load("images/reference.jpg")
+	tmp = download("$base_path/collenchyma.jpg", "collenchyma.jpg")
+	original = load("collenchyma.jpg")
+	tmp = download("$base_path/reference.jpg", "reference.jpg")
+	reference = load("reference.jpg")
 	temp = copy(original)
 	# add a constant to avoid negative values
 	temp = Gray(109/255) .+ original
@@ -428,11 +417,17 @@ Each pixel in the output image is the product of the corresponding pixel in the 
 # ╔═╡ 33afa793-3ff9-4964-8dad-55defac879ed
 let
 	airplane = testimage("airplane")
-	radialgradient = load("images/radialgradient.png")
+	radialgradient = download("$base_path/radialgradient.png", "radialgradient.png")
+	radialgradient = load("radialgradient.png")
 	# hadarmard product -> elementwise product
 	temp = airplane .⊙ radialgradient
 	[airplane radialgradient temp]
 end
+
+# ╔═╡ 6a5e4c6f-0c39-460d-8a71-a8a24d5c5e22
+md"""
+_Original image(left), Radial gradient (centre), Image product (right)_
+"""
 
 # ╔═╡ b2e27047-d19d-47bf-8ebd-6f820b629d71
 md"""
@@ -440,18 +435,39 @@ md"""
 """
 
 # ╔═╡ 2329ab22-ff21-4dae-9145-aabe0bca97c0
-let
-	cars = load("images/cars.jpg")
-	circle_mask = load("images/circle-mask.jpg")
+begin
+	cars = download("$base_path/cars.jpg", "cars.jpg");
+	circle_mask = download("$base_path/circle-mask.jpg", "circle-mask.jpg");
+	cars = load("cars.jpg");
+	circle_mask = load("circle-mask.jpg");
+	[cars circle_mask]
 end
 
-# ╔═╡ 1c37970a-7278-4dc7-945e-174340f4066a
+# ╔═╡ 1fd2b39e-ed9a-43c0-9793-896b0515545e
+function bitwise_and(a, b)
+	val = reinterpret(gray(a)) & reinterpret(gray(b))
+	return Gray(float(val)/255)
+end;
 
+# ╔═╡ 676dedff-7e5b-47b9-8193-ecb70d8ec42a
+bitwise_and.(cars, circle_mask)
 
-# ╔═╡ 6a5e4c6f-0c39-460d-8a71-a8a24d5c5e22
+# ╔═╡ 93a381de-6c08-4450-bc54-ffac22d58fc7
 md"""
-_Original image(left), Radial gradient (centre), Image product (right)_
+##### Logical operations: OR
 """
+
+# ╔═╡ 9ce779dd-b4fc-42b1-b144-e5dd2cd65161
+function bitwise_or(a, b)
+	val = reinterpret(gray(a)) | reinterpret(gray(b))
+	return Gray(float(val)/255)
+end;
+
+# ╔═╡ 5ced9bed-d646-4c61-8580-860e2d7e7c56
+bitwise_or.(cars, circle_mask)
+
+# ╔═╡ 18890635-5b71-44af-9af1-f092c7b21ed3
+
 
 # ╔═╡ 8405a203-9e2f-4544-a96c-7d7e2ad43fc2
 imrotate(cameraman, π/4, axes(cameraman))
@@ -460,6 +476,7 @@ imrotate(cameraman, π/4, axes(cameraman))
 # ╟─b3c895eb-552f-4a2f-a46c-5588ceb36928
 # ╟─126ed5e7-d15e-409e-929d-c68a87900be2
 # ╠═51d657ba-3305-4fa6-93d0-fe75252621b8
+# ╠═ae17bd41-7958-4c1c-919c-ba63fc8b32a4
 # ╠═ec05e818-a041-40ae-b6f2-076c40d97210
 # ╠═c4e69a41-35e2-4532-b6a7-0ec268de433e
 # ╠═9174cb97-9a85-4d60-af92-d96fa988dcec
@@ -488,8 +505,6 @@ imrotate(cameraman, π/4, axes(cameraman))
 # ╟─99bcdb22-8a93-404d-8e61-c25213a407b3
 # ╠═31451725-591d-44fa-a230-b385d522a8da
 # ╠═1f53c41b-8c44-4c3e-854e-ff269271092c
-# ╠═9127683a-9ffd-4f98-ac00-b719d858def0
-# ╠═92a533d0-a928-4d45-9fd0-60a748edc05f
 # ╟─3d14bd45-68cc-4a68-9316-da6479a04ec8
 # ╟─298c6fd5-730b-4358-9fe8-b9501fd37826
 # ╟─64cd7fec-ea56-47ac-8a39-f860c822b3e3
@@ -519,8 +534,13 @@ imrotate(cameraman, π/4, axes(cameraman))
 # ╟─acfe7a7c-5fa9-4e06-bd27-36787c2ab1ae
 # ╟─3ec6e5ae-0119-4beb-9681-e19c1e0dc0c9
 # ╠═33afa793-3ff9-4964-8dad-55defac879ed
-# ╠═b2e27047-d19d-47bf-8ebd-6f820b629d71
-# ╠═2329ab22-ff21-4dae-9145-aabe0bca97c0
-# ╠═1c37970a-7278-4dc7-945e-174340f4066a
 # ╟─6a5e4c6f-0c39-460d-8a71-a8a24d5c5e22
+# ╟─b2e27047-d19d-47bf-8ebd-6f820b629d71
+# ╠═2329ab22-ff21-4dae-9145-aabe0bca97c0
+# ╠═1fd2b39e-ed9a-43c0-9793-896b0515545e
+# ╠═676dedff-7e5b-47b9-8193-ecb70d8ec42a
+# ╟─93a381de-6c08-4450-bc54-ffac22d58fc7
+# ╠═9ce779dd-b4fc-42b1-b144-e5dd2cd65161
+# ╠═5ced9bed-d646-4c61-8580-860e2d7e7c56
+# ╠═18890635-5b71-44af-9af1-f092c7b21ed3
 # ╠═8405a203-9e2f-4544-a96c-7d7e2ad43fc2
